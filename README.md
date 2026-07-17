@@ -27,7 +27,7 @@ The series will cover topics such as:
 
 ## Articles
 
-1. [Spring Framework and Spring Boot: What Is the Difference?](./01-spring-framework-and-spring-boot.md)
+1. [Spring Framework and Spring Boot: What Is the Difference?](https://github.com/ahmadagha-at/spring-framework-concepts/blob/main/01-what-is-spring-boot/README.md)
 2. **Spring Core** — Coming soon
 
 More articles will be added step by step.
