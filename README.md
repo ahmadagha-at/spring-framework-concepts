@@ -15,20 +15,15 @@ Each article focuses on a specific topic and presents it in a clear and structur
 The series will cover topics such as:
 
 - Spring Framework and Spring Boot
+- Spring MVC
 - Spring Core
 - Inversion of Control and Dependency Injection
 - beans, scopes, and the bean lifecycle
 - Spring Boot auto-configuration
-- Spring MVC
 - Spring Data
 - Spring Security
 - testing Spring applications
 - additional modules and advanced concepts
-
-## Articles
-
-1. [Spring Framework and Spring Boot: What Is the Difference?](https://github.com/ahmadagha-at/spring-framework-concepts/blob/main/01-what-is-spring-boot/README.md)
-2. [Spring MVC vs Spring Boot](https://github.com/ahmadagha-at/spring-framework-concepts/blob/main/02-spring-mvc-vs-spring-boot/README.md)
 
 More articles will be added step by step.
 
