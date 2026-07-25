@@ -20,6 +20,7 @@ The Spring Framework is modular. Its modules support different areas of applicat
 - application security
 - testing
 - integration with other technologies
+  
 
 Spring therefore provides the foundation and the tools needed to structure an application. However, developers still need to select dependencies and configure the application according to their requirements.
 
