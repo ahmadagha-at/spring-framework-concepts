@@ -15,6 +15,7 @@ The articles focus on the Spring IoC container and its main responsibilities:
 - managing lifecycle callbacks and scopes
 - reading configuration from the environment
 - understanding how Spring Boot starts and configures the container
+  
 
 `DispatcherServlet` is not a Spring Core component. It belongs to Spring MVC and is covered in the separate Spring MVC article. Similarly, Actuator and DevTools are Spring Boot features; they appear only in the final integration article so that the boundary between Spring Framework and Spring Boot remains clear.
 
