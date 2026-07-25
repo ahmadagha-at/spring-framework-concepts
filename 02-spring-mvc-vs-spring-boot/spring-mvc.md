@@ -101,6 +101,7 @@ Spring Boot reduces this setup by providing:
 - externalized configuration
 - sensible defaults
 - production-oriented features
+  
 
 In simple terms:
 
