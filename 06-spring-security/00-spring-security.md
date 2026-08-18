@@ -104,6 +104,55 @@ A secure implementation can become insecure through deployment configuration. Im
 
 The application should fail clearly when required security configuration is missing.
 
+
+## Threat modeling
+
+Security configuration should begin with the assets and trust boundaries of the application.
+
+For a backend API, relevant questions include:
+
+- Which data is sensitive?
+- Which clients are trusted?
+- Where do credentials enter the system?
+- Which operations change valuable state?
+- Can one tenant access another tenant's data?
+- Which external systems can influence authorization?
+- What happens when a token, password, or signing key is compromised?
+
+A threat model does not need to predict every attack. Its purpose is to connect controls to concrete risks.
+
+```text
+asset
+→ possible attacker
+→ attack path
+→ preventive control
+→ detection and recovery
+```
+
+For example, protecting an order endpoint with authentication addresses anonymous access, but it does not address cross-tenant object access. That risk requires ownership or tenant authorization.
+
+## Defense in depth
+
+No single security mechanism is sufficient. A secure write operation can combine:
+
+1. TLS protects data in transit.
+2. Authentication establishes the caller identity.
+3. Request authorization checks the required capability.
+4. Domain authorization checks resource ownership.
+5. Input validation rejects malformed data.
+6. The domain model enforces business invariants.
+7. Database constraints protect persisted integrity.
+8. Audit logging records the sensitive decision.
+9. Monitoring detects unusual failure patterns.
+
+If one layer is bypassed or misconfigured, another layer can still limit the impact.
+
+## Security errors should not leak details
+
+Authentication failures should not reveal whether a username exists, which signature check failed, or which internal provider rejected a request. Server logs can contain diagnostic context, while client responses remain stable and limited.
+
+Sensitive values such as passwords, complete tokens, session identifiers, and secrets must never be written to logs.
+
 ## References
 
 - [Spring Security Reference](https://docs.spring.io/spring-security/reference/)
