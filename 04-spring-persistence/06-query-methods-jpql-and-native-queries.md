@@ -54,6 +54,95 @@ Queries should retrieve the shape required by the use case. DTO or interface pro
 
 A query is not good merely because it returns correct data. Inspect generated SQL, query plans, indexes, number of database round trips, and selected columns.
 
+
+## Query derivation rules
+
+Spring Data parses a method name into a subject and predicate:
+
+```text
+findTop10ByStatusAndCreatedAtBeforeOrderByCreatedAtDesc
+│         │                              │
+subject   predicate                      ordering
+```
+
+Property expressions are checked against the domain model. This provides useful startup validation, but names become difficult to read when many conditions are combined.
+
+Reserved repository methods such as `findById` have predefined semantics. Similar-looking domain properties can therefore create confusing names, so method intent should remain explicit.
+
+## Parameter binding
+
+Named parameters make explicit queries easier to maintain:
+
+```java
+@Query("""
+       select o
+       from Order o
+       where o.customer.id = :customerId
+         and o.status = :status
+       """)
+List<Order> findCustomerOrders(
+        @Param("customerId") Long customerId,
+        @Param("status") OrderStatus status
+);
+```
+
+String concatenation must never be used to insert untrusted values into native SQL. Parameter binding protects query structure and allows the driver to handle values correctly.
+
+## Fetch queries and pagination
+
+A collection fetch join can duplicate root rows because one parent appears once for every joined child. Combining that query with pagination may produce inefficient in-memory behavior or incorrect expectations.
+
+A common approach is:
+
+1. page only the parent identifiers
+2. fetch the required graph for those identifiers
+3. preserve the requested ordering
+
+There is no universal query annotation that solves every pagination and association combination.
+
+## Bulk updates
+
+JPQL update and delete statements operate directly on database rows:
+
+```java
+@Modifying(clearAutomatically = true)
+@Query("""
+       update User u
+       set u.active = false
+       where u.lastLoginAt < :cutoff
+       """)
+int deactivateInactiveUsers(Instant cutoff);
+```
+
+Bulk operations bypass normal entity dirty checking and can leave managed entities stale. Clearing or synchronizing the persistence context must be considered explicitly.
+
+## Specifications and dynamic queries
+
+Specifications are useful when filters are optional:
+
+```java
+Specification<Order> specification =
+        hasStatus(filter.status())
+        .and(createdAfter(filter.createdAfter()));
+```
+
+They improve composition, but deeply nested criteria code can still become difficult to understand. For complex reporting, explicit query objects or SQL may be clearer.
+
+## Validate with SQL
+
+For important queries, verify:
+
+- generated SQL
+- selected columns
+- joins
+- number of statements
+- query plan
+- index use
+- row counts
+- pagination behavior
+
+The repository method name describes intent; the database execution plan determines performance.
+
 ## Key takeaway
 
 Use derived queries for simple intent, JPQL for explicit entity-oriented queries, native SQL for justified database-specific needs, and projections or specifications for focused read models and dynamic filtering.
