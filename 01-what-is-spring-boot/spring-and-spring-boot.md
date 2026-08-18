@@ -120,6 +120,6 @@ Spring Boot is therefore not a replacement for Spring. It is a convenient and op
 - [GeeksforGeeks: Spring vs Spring Boot](https://www.geeksforgeeks.org/java/difference-between-spring-and-spring-boot/)
 
 
-## Next Article: Spring Core
+## Next Article: Spring MVC
 
-The next article will explore **Spring Core**, including the IoC container, beans, and Dependency Injection. These concepts form the foundation of both the Spring Framework and Spring Boot.
+The next article explains how **Spring MVC** provides the web layer and how it works together with the Spring Framework and Spring Boot.

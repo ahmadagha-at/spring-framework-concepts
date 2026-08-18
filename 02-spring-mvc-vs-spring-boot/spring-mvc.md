@@ -331,6 +331,9 @@ The most important distinction is:
 
 Spring Boot is therefore not a replacement for Spring Framework or Spring MVC. It is a convenient and opinionated way to build applications that use them.
 
-## Reference
+## References
 
+- [Spring Framework: Spring Web MVC](https://docs.spring.io/spring-framework/reference/web/webmvc.html)
+- [Spring Framework: DispatcherServlet](https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-servlet.html)
+- [Spring Boot: Developing Web Applications](https://docs.spring.io/spring-boot/reference/web/servlet.html)
 - [GeeksforGeeks: Spring Boot Tutorial](https://www.geeksforgeeks.org/advance-java/spring-boot/)
