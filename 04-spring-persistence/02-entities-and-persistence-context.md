@@ -53,6 +53,74 @@ In Spring applications, the persistence context is commonly associated with a tr
 
 Keeping the persistence context open through the web layer can hide lazy-loading problems and produce uncontrolled database access. Transaction boundaries should normally follow application use cases.
 
+
+## What happens when an entity is loaded
+
+When `find()` loads an entity, the provider first checks whether that identity is already present in the persistence context. If it is, the managed instance can be returned. Otherwise, SQL may be executed, a Java object is created, its fields are populated, and the instance is registered as managed.
+
+```java
+User first = entityManager.find(User.class, 1L);
+User second = entityManager.find(User.class, 1L);
+
+assert first == second;
+```
+
+Within the same persistence context, both variables normally refer to the same managed instance. This prevents two competing in-memory representations of the same row inside one unit of work.
+
+## Persistence context operations
+
+Important `EntityManager` operations include:
+
+| Operation | Effect |
+|---|---|
+| `persist(entity)` | Makes a new entity managed |
+| `find(type, id)` | Returns a managed entity when found |
+| `getReference(type, id)` | May return a lazy reference |
+| `detach(entity)` | Stops tracking one entity |
+| `clear()` | Detaches all managed entities |
+| `remove(entity)` | Marks a managed entity for deletion |
+| `merge(entity)` | Copies state into a managed instance |
+| `flush()` | Synchronizes pending changes with the database |
+
+Calling `clear()` does not undo SQL that has already been executed. Rollback is a transaction operation, while clearing is a persistence-context operation.
+
+## Transaction-scoped context
+
+In a typical Spring service:
+
+```java
+@Transactional
+public UserResponse rename(Long id, String name) {
+    User user = repository.findById(id).orElseThrow();
+    user.rename(name);
+    return mapper.toResponse(user);
+}
+```
+
+The transaction interceptor opens or joins a transaction. The JPA infrastructure supplies an `EntityManager` associated with the current transaction. The loaded `User` remains managed until that context ends.
+
+After the method returns and the transaction completes, the entity is normally detached. Accessing an uninitialized lazy association afterward can fail because no active persistence context is available to load it.
+
+## Entities and DTOs
+
+An entity represents persistent identity and participates in change tracking. A DTO represents data crossing an application boundary.
+
+Returning entities directly from controllers creates several risks:
+
+- lazy associations may execute queries during serialization
+- bidirectional relationships may recurse
+- internal columns can become part of the API
+- client input can overwrite fields that should not be writable
+- API changes become coupled to database mappings
+
+Map entities to request and response models inside a controlled transaction boundary.
+
+## Persistence context is not a global cache
+
+The first-level cache belongs to one persistence context. It is not shared across all requests and is not a general replacement for application caching. A new transaction may use a new context and load the row again.
+
+Second-level caching is a separate optional provider feature with different invalidation and consistency concerns.
+
 ## Key takeaway
 
 An entity represents persistent identity and state. The persistence context tracks managed entity instances and coordinates their changes with the database.
