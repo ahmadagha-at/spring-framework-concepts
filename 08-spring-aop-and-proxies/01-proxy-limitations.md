@@ -55,6 +55,77 @@ When an annotation appears to be ignored, ask:
 
 Spring AOP is proxy-based and focused on Spring beans. AspectJ can apply broader bytecode weaving, but it introduces a different model and additional complexity.
 
+
+## Interface and class proxies
+
+A JDK dynamic proxy implements one or more interfaces. Code interacting with it should use the proxied interface type.
+
+A class-based proxy subclasses the target class. Methods that cannot be overridden cannot be intercepted through subclassing.
+
+The exact defaults can depend on configuration and Spring Boot behavior. Application code should focus on valid bean boundaries rather than detecting proxy classes manually.
+
+## Proxy identity
+
+Because the exposed object can differ from the target instance, assumptions about runtime class equality can fail:
+
+```java
+bean.getClass() == ReportService.class
+```
+
+This may be false for class-based proxies. Use behavior and declared types rather than exact runtime-class checks.
+
+## Final, private, and static methods
+
+Private methods cannot be overridden and are not external bean entry points. Static methods belong to the class rather than a bean instance. Final methods cannot be overridden by a class proxy.
+
+Placing an infrastructure annotation on such a method does not guarantee interception.
+
+## Constructor execution
+
+A proxy cannot advise work that happens before the proxied instance exists. Heavy logic in constructors is therefore outside normal method interception and also makes object creation fragile.
+
+Constructors should establish valid state and receive dependencies. Use explicit lifecycle mechanisms for initialization requiring the container.
+
+## Self-injection is not the default solution
+
+Injecting a bean into itself or retrieving itself from `ApplicationContext` can route a call through the proxy, but it hides architecture and creates container coupling.
+
+Prefer extracting the intercepted operation into a collaborator:
+
+```text
+OrderService
+→ PaymentTransactionService
+```
+
+The new bean boundary should represent a real responsibility, not exist only to satisfy the framework.
+
+## Programmatic alternatives
+
+When dynamic transaction boundaries are genuinely required, `TransactionTemplate` can express them directly. When asynchronous execution is required, an explicit task executor can be used.
+
+Programmatic APIs can be clearer than forcing proxy annotations onto an unsuitable call structure.
+
+## AspectJ weaving
+
+AspectJ can advise calls beyond Spring-managed proxy boundaries through compile-time or load-time weaving. It can address self-invocation, but it changes build, runtime, and debugging complexity.
+
+Use it only when the broader join-point model is a real requirement, not as a shortcut around poor bean boundaries.
+
+## Diagnostic example
+
+If `@Transactional` appears ineffective:
+
+1. confirm the class is a Spring bean
+2. confirm the method is invoked from another bean
+3. inspect whether the bean is proxied
+4. check method visibility and proxy type
+5. confirm a transaction manager exists
+6. enable transaction logging
+7. verify the exception is not swallowed
+8. confirm rollback rules
+
+This systematic path is more reliable than moving the annotation between methods randomly.
+
 ## Key takeaway
 
 Annotations such as `@Transactional` describe behavior; a proxy must intercept a matching call to apply it. Understanding the invocation path is essential when debugging Spring infrastructure.
