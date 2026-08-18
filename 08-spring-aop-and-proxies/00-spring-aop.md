@@ -65,6 +65,90 @@ public class TimingAspect {
 
 Aspects should remain focused. Hiding core business behavior inside advice makes control flow difficult to understand.
 
+
+## Why cross-cutting concerns are difficult
+
+Without AOP, the same infrastructure logic can appear in many services:
+
+```java
+beginTransaction();
+checkPermission();
+startTimer();
+try {
+    return executeBusinessOperation();
+} finally {
+    stopTimer();
+    commitOrRollback();
+}
+```
+
+This mixes business behavior with infrastructure behavior. AOP allows framework infrastructure to wrap eligible method calls consistently.
+
+## Types of advice
+
+Spring AOP supports advice at different points:
+
+| Advice | Execution time |
+|---|---|
+| Before | Before the target method |
+| After returning | After successful return |
+| After throwing | After an exception |
+| After | After completion in either case |
+| Around | Controls invocation before and after `proceed()` |
+
+Around advice is powerful because it can prevent invocation, change arguments, replace the result, or translate exceptions. It should therefore be used carefully.
+
+## Pointcuts
+
+A pointcut selects methods. Selection can be based on packages, types, methods, annotations, or combinations.
+
+```java
+@Around(
+    "within(com.example.application..*) " +
+    "&& @annotation(Timed)"
+)
+```
+
+Broad pointcuts can advise unintended beans. Pointcuts should describe a stable architectural boundary rather than match accidental naming.
+
+## Proxy creation
+
+Bean post-processors inspect eligible beans during context creation. When advice applies, the object exposed by the context can be a proxy.
+
+```text
+bean definition
+→ target instance created
+→ bean post-processors inspect target
+→ proxy created when eligible
+→ proxy stored as exposed bean
+```
+
+Dependencies receive the exposed proxy. The proxy delegates to the target after applying interceptors.
+
+## Interceptor chain
+
+Several concerns can wrap the same method:
+
+```text
+method-security interceptor
+→ transaction interceptor
+→ metrics interceptor
+→ target method
+```
+
+Ordering changes behavior. For example, whether timing includes authorization work depends on interceptor order.
+
+## AOP and domain logic
+
+AOP is suitable when behavior is:
+
+- cross-cutting
+- infrastructure-oriented
+- consistently applicable
+- understandable outside the target method
+
+Do not hide essential domain state changes inside aspects. A reader should still understand the business use case from the service and domain code.
+
 ## Key takeaway
 
 Spring AOP applies cross-cutting behavior through proxies around Spring-managed method calls. It is infrastructure, not a replacement for clear application design.
